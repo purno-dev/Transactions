@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>💰 আর্থিক ট্র্যাকার — ব্যক্তিগত হিসাব</title>
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Google Fonts — বাংলা ফন্ট -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!--  লোডিং ওভারলে                                  -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div id="loadingOverlay" class="loading-overlay hidden">
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      <p>ডেটা লোড হচ্ছে...</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!--  নোটিফিকেশন টোস্ট                               -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!--  হেডার / নেভিগেশন                               -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <header class="header">
+    <div class="header-container">
+      <h1 class="logo">💰 আর্থিক ট্র্যাকার</h1>
+      <nav class="nav-tabs">
+        <button class="nav-btn active" data-tab="dashboard" onclick="switchTab('dashboard')">
+          📊 ড্যাশবোর্ড
+        </button>
+        <button class="nav-btn" data-tab="entry" onclick="switchTab('entry')">
+          ➕ নতুন এন্ট্রি
+        </button>
+        <button class="nav-btn" data-tab="report" onclick="switchTab('report')">
+          📈 মাসিক রিপোর্ট
+        </button>
+        <button class="nav-btn" data-tab="loans" onclick="switchTab('loans')">
+          🤝 ঋণ ট্র্যাকার
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!--  ট্যাব ১: ড্যাশবোর্ড (সারাংশ)                    -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <section id="tab-dashboard" class="tab-content active">
+      <h2 class="section-title">📊 এই মাসের সারাংশ</h2>
+
+      <!-- সামারি কার্ড -->
+      <div class="summary-cards">
+        <div class="card card-expense">
+          <div class="card-icon">💸</div>
+          <div class="card-info">
+            <span class="card-label">মোট খরচ</span>
+            <span class="card-value" id="totalExpense">৳ 0</span>
+          </div>
+        </div>
+
+        <div class="card card-loan-given">
+          <div class="card-icon">📤</div>
+          <div class="card-info">
+            <span class="card-label">ঋণ দেওয়া</span>
+            <span class="card-value" id="totalLoanGiven">৳ 0</span>
+          </div>
+        </div>
+
+        <div class="card card-loan-received">
+          <div class="card-icon">📥</div>
+          <div class="card-info">
+            <span class="card-label">ঋণ নেওয়া</span>
+            <span class="card-value" id="totalLoanReceived">৳ 0</span>
+          </div>
+        </div>
+
+        <div class="card card-balance">
+          <div class="card-icon">⚖️</div>
+          <div class="card-info">
+            <span class="card-label">নিট ব্যালেন্স</span>
+            <span class="card-value" id="netBalance">৳ 0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ক্যাটাগরি চার্ট -->
+      <div class="chart-section">
+        <h3>📂 ক্যাটাগরিভিত্তিক খরচ</h3>
+        <div id="categoryChart" class="chart-container">
+          <!-- চার্ট এখানে রেন্ডার হবে -->
+          <p class="chart-placeholder">ডেটা লোড হচ্ছে...</p>
+        </div>
+      </div>
+
+      <!-- সাম্প্রতিক লেনদেন -->
+      <div class="recent-transactions">
+        <h3>🕐 সাম্প্রতিক লেনদেন</h3>
+        <div id="recentTransactions" class="transaction-list">
+          <p class="empty-state">কোনো লেনদেন নেই।</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!--  ট্যাব ২: নতুন এন্ট্রি ফর্ম                       -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <section id="tab-entry" class="tab-content">
+      <h2 class="section-title">➕ নতুন লেনদেন যোগ করুন</h2>
+
+      <form id="transactionForm" class="entry-form" onsubmit="return handleFormSubmit(event)">
+
+        <!-- তারিখ ও সময় -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="txnDate">📅 তারিখ <span class="required">*</span></label>
+            <input type="date" id="txnDate" name="date" required>
+          </div>
+          <div class="form-group">
+            <label for="txnTime">🕐 সময় <span class="required">*</span></label>
+            <input type="time" id="txnTime" name="time" required>
+          </div>
+        </div>
+
+        <!-- ধরন -->
+        <div class="form-group">
+          <label>📋 লেনদেনের ধরন <span class="required">*</span></label>
+          <div class="type-selector">
+            <label class="type-option">
+              <input type="radio" name="type" value="Expense" checked onchange="onTypeChange(this.value)">
+              <span class="type-badge expense-badge">💸 খরচ</span>
+            </label>
+            <label class="type-option">
+              <input type="radio" name="type" value="Loan-Given" onchange="onTypeChange(this.value)">
+              <span class="type-badge loan-given-badge">📤 ঋণ দেওয়া</span>
+            </label>
+            <label class="type-option">
+              <input type="radio" name="type" value="Loan-Received" onchange="onTypeChange(this.value)">
+              <span class="type-badge loan-received-badge">📥 ঋণ নেওয়া</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- ক্যাটাগরি -->
+        <div class="form-group" id="categoryGroup">
+          <label for="txnCategory">📂 ক্যাটাগরি <span class="required">*</span></label>
+          <select id="txnCategory" name="category" required>
+            <option value="">-- ক্যাটাগরি নির্বাচন করুন --</option>
+          </select>
+        </div>
+
+        <!-- টাকার পরিমাণ -->
+        <div class="form-group">
+          <label for="txnAmount">💵 টাকার পরিমাণ <span class="required">*</span></label>
+          <div class="amount-input-wrapper">
+            <span class="currency-symbol">৳</span>
+            <input type="number" id="txnAmount" name="amount" min="1" step="0.01" placeholder="0.00" required>
+          </div>
+        </div>
+
+        <!-- বিবরণ -->
+        <div class="form-group">
+          <label for="txnDescription" id="descLabel">📝 বিবরণ</label>
+          <textarea id="txnDescription" name="description" rows="2" placeholder="বিবরণ লিখুন (ঐচ্ছিক)"></textarea>
+          <small id="descHint" class="form-hint"></small>
+        </div>
+
+        <!-- সাবমিট বোতাম -->
+        <button type="submit" class="btn-submit" id="submitBtn">
+          ✅ সংরক্ষণ করুন
+        </button>
+      </form>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!--  ট্যাব ৩: মাসিক রিপোর্ট                          -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <section id="tab-report" class="tab-content">
+      <h2 class="section-title">📈 মাসিক রিপোর্ট</h2>
+
+      <!-- মাস নির্বাচক -->
+      <div class="month-selector">
+        <label for="reportMonth">মাস নির্বাচন করুন:</label>
+        <input type="month" id="reportMonth" onchange="loadMonthlyReport()">
+      </div>
+
+      <!-- রিপোর্ট সামারি -->
+      <div id="reportSummary" class="report-summary">
+        <p class="empty-state">উপরে মাস নির্বাচন করুন।</p>
+      </div>
+
+      <!-- রিপোর্ট টেবিল -->
+      <div id="reportTable" class="report-table-container">
+        <!-- টেবিল এখানে রেন্ডার হবে -->
+      </div>
+
+      <!-- সব মাসের তুলনামূলক সামারি -->
+      <div class="all-months-report">
+        <h3>📊 সব মাসের তুলনামূলক সামারি</h3>
+        <div id="allMonthsReport">
+          <p class="empty-state">ডেটা লোড হচ্ছে...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!--  ট্যাব ৪: ঋণ ট্র্যাকার                           -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <section id="tab-loans" class="tab-content">
+      <h2 class="section-title">🤝 ঋণ ট্র্যাকার</h2>
+
+      <!-- সামগ্রিক ঋণ সারাংশ -->
+      <div class="loan-overview" id="loanOverview">
+        <p class="empty-state">ডেটা লোড হচ্ছে...</p>
+      </div>
+
+      <!-- ব্যক্তিভিত্তিক ঋণ তালিকা -->
+      <div class="loan-details" id="loanDetails">
+        <!-- ব্যক্তিভিত্তিক ঋণ এখানে দেখানো হবে -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ফুটার -->
+  <footer class="footer">
+    <p>💰 ব্যক্তিগত আর্থিক ট্র্যাকার &copy; <span id="currentYear"></span> | Google Sheets দিয়ে চালিত</p>
+  </footer>
+
+  <!-- JavaScript ফাইল -->
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
