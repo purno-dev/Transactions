@@ -84,10 +84,20 @@ function getCurrentDate() {
 /**
  * বর্তমান সময় HH:MM ফরম্যাটে
  */
-function getCurrentTime() {
-  const now = new Date();
-  return String(now.getHours()).padStart(2, '0') + ':' +
-    String(now.getMinutes()).padStart(2, '0');
+function setFormTimeToNow() {
+  let now = new Date(), h = now.getHours(), m = now.getMinutes();
+  let ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12; 
+  document.getElementById('txnHour').value = h;
+  document.getElementById('txnMinute').value = m < 10 ? '0' + m : m;
+  document.getElementById('txnAmPm').value = ampm;
+}
+
+function getFormTime12h() {
+  let h = document.getElementById('txnHour').value;
+  let m = document.getElementById('txnMinute').value;
+  let a = document.getElementById('txnAmPm').value;
+  return h + ":" + m + " " + a;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -332,7 +342,7 @@ function renderCategoryChart(categories) {
 function initEntryForm() {
   // ডিফল্ট তারিখ ও সময় সেট
   document.getElementById('txnDate').value = getCurrentDate();
-  document.getElementById('txnTime').value = getCurrentTime();
+  setFormTimeToNow();
 
   // ক্যাটাগরি ড্রপডাউন পূরণ
   populateCategories();
@@ -395,7 +405,7 @@ async function handleFormSubmit(event) {
   // ফর্ম ডেটা সংগ্রহ
   const formData = {
     date: document.getElementById('txnDate').value,
-    time: document.getElementById('txnTime').value,
+    time: getFormTime12h(),
     category: document.getElementById('txnCategory').value,
     amount: document.getElementById('txnAmount').value,
     type: document.querySelector('input[name="type"]:checked').value,
@@ -427,7 +437,7 @@ async function handleFormSubmit(event) {
       // ফর্ম রিসেট
       document.getElementById('txnAmount').value = '';
       document.getElementById('txnDescription').value = '';
-      document.getElementById('txnTime').value = getCurrentTime();
+      setFormTimeToNow();
 
       // Expense রেডিও বোতাম আবার সিলেক্ট
       document.querySelector('input[name="type"][value="Expense"]').checked = true;
@@ -443,7 +453,7 @@ async function handleFormSubmit(event) {
     // ফর্ম রিসেট
     document.getElementById('txnAmount').value = '';
     document.getElementById('txnDescription').value = '';
-    document.getElementById('txnTime').value = getCurrentTime();
+    setFormTimeToNow();
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = '✅ সংরক্ষণ করুন';
